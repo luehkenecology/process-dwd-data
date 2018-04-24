@@ -20,8 +20,8 @@ coordinates <- read.table (file = "data/coordinates.csv",
                            row.names=1, header=TRUE, sep=";", fill=T)
 
 # download function----------------------------------------------------------------------
-dwd <- function(var_x = "wind"){
-  # just for script testing var_x = "solar"
+dwd <- function(dwd_var = "wind"){
+  # just for script testing dwd_var = "solar"
   
   # download station info----------------------------------------------------------------------
   # temporary directory
@@ -31,12 +31,12 @@ dwd <- function(var_x = "wind"){
   tf = tempfile(tmpdir=td, fileext=".txt")
   
   # get all URLs of files (different directories for solar)
-  if(var_x == "solar"){
-    station_url <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",var_x, "/", sep = ""),
+  if(dwd_var == "solar"){
+    station_url <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",dwd_var, "/", sep = ""),
                           verbose=TRUE,ftp.use.epsv=TRUE,
                           dirlistonly = TRUE) 
   } else {
-    station_url <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",var_x,"/recent/", sep = ""),
+    station_url <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",dwd_var,"/recent/", sep = ""),
                           verbose=TRUE,ftp.use.epsv=TRUE,
                           dirlistonly = TRUE) 
   }
@@ -48,10 +48,10 @@ dwd <- function(var_x = "wind"){
   station_url_3 <- station_url_2[(str_sub(unlist(station_url_2), -3, -1) == "txt")==T]
   
   # download txt-file with station information
-  if(var_x == "solar"){
-    download.file(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/", var_x,"/", station_url_3, sep = ""), tf)
+  if(dwd_var == "solar"){
+    download.file(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/", dwd_var,"/", station_url_3, sep = ""), tf)
   } else {
-    download.file(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/", var_x, "/recent/", station_url_3, sep = ""), tf)
+    download.file(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/", dwd_var, "/recent/", station_url_3, sep = ""), tf)
   }
   
   # read txt-file with station information
@@ -69,21 +69,21 @@ dwd <- function(var_x = "wind"){
   station_infos_4[,5] <- as.numeric(unlist(lapply(station_infos_4[,5], as.vector)))
   station_infos_4[,6] <- as.numeric(unlist(lapply(station_infos_4[,6], as.vector)))
   
-  if(var_x == "solar"){
-    recent_urls <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",var_x,"/", sep = ""),
+  if(dwd_var == "solar"){
+    recent_urls <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",dwd_var,"/", sep = ""),
                           verbose=TRUE,ftp.use.epsv=TRUE,
                           dirlistonly = TRUE) 
     recent_urls_2 <- unlist(strsplit(as.character(recent_urls), "\r\n"))
     recent_urls_3 <- recent_urls_2[(str_sub(unlist(recent_urls_2), -3, -1) == "zip")==T]
     
   }else{
-    recent_urls <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",var_x,"/recent/", sep = ""),
+    recent_urls <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",dwd_var,"/recent/", sep = ""),
                           verbose=TRUE,ftp.use.epsv=TRUE,
                           dirlistonly = TRUE) 
     recent_urls_2 <- unlist(strsplit(as.character(recent_urls), "\r\n"))
     recent_urls_3 <- recent_urls_2[(str_sub(unlist(recent_urls_2), -3, -1) == "zip")==T]
     
-    historic_urls <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",var_x, "/historical/", sep = ""),
+    historic_urls <- getURL(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/",dwd_var, "/historical/", sep = ""),
                             verbose=TRUE,ftp.use.epsv=TRUE,
                             dirlistonly = TRUE) 
     historic_urls_2 <- unlist(strsplit(as.character(historic_urls), "\r\n"))
@@ -91,7 +91,7 @@ dwd <- function(var_x = "wind"){
   }
   
   # get urls of data files
-  if(var_x == "solar"){
+  if(dwd_var == "solar"){
     # extract station id from the download path
     recent_urls_3_data <- data.frame(Stations_id = str_sub(recent_urls_3, -13, -9),
                                      url = recent_urls_3)
@@ -161,8 +161,8 @@ dwd <- function(var_x = "wind"){
                                  cy = coordinates$WGS84.Y)
   
   # plot map with sampling sites-weather stations connected
-  png(paste("figs/", var_x, "_map.png"),width = 6, height=5, units = 'in', res = 1000)
-  plot(d_shp, main = paste(var_x))
+  png(paste("figs/", dwd_var, "_map.png"),width = 6, height=5, units = 'in', res = 1000)
+  plot(d_shp, main = paste(dwd_var))
   points(gps_info_station[,2:3], pch = 19)
   points(gps_info_station[,5:6], pch = 19, col = "red")
   
@@ -175,7 +175,7 @@ dwd <- function(var_x = "wind"){
   dev.off()
   
   # save gps info of station
-  write.table(gps_info_station, paste("output/", var_x, "_GPS.csv"),sep=";")
+  write.table(gps_info_station, paste("output/", dwd_var, "_GPS.csv"),sep=";")
   
   # data.frame for saving from loop to loop
   result_file <- data.frame()
@@ -191,8 +191,8 @@ dwd <- function(var_x = "wind"){
     tf = tempfile(tmpdir = td, fileext=".zip")
     
     # download the file
-    download.file(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/", var_x, "/",
-                        (ifelse(var_x == "solar", as.character(station_info_merge_all_4$url[station_to_download_ids[i]]), 
+    download.file(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/", dwd_var, "/",
+                        (ifelse(dwd_var == "solar", as.character(station_info_merge_all_4$url[station_to_download_ids[i]]), 
                                 as.character(station_info_merge_all_4$url.x[station_to_download_ids[i]]))), 
                         sep=""), tf)
     
@@ -211,7 +211,7 @@ dwd <- function(var_x = "wind"){
     rdata <- read.table(fpath, sep = ";", header = T)
     
     # date to POSIXct-format (solar data have a different format)
-    if(var_x == "solar"){
+    if(dwd_var == "solar"){
       
       # date to POSIXct
       rdata$date <- as.POSIXct(as.character(str_sub(as.character(rdata$MESS_DATUM), 1,10)), 
@@ -230,7 +230,7 @@ dwd <- function(var_x = "wind"){
     for(y in 1:station_to_download_val[i]){
       
       # if/else becasue only for air_temperature with want to extract temperature for the hour before 
-      if(var_x == "air_temperature"){
+      if(dwd_var == "air_temperature"){
         # add site ID
         rdata$ID <- coordinates_sub$ID[y]
         
@@ -251,14 +251,14 @@ dwd <- function(var_x = "wind"){
     }
     
     # save results
-    write.table(result_file, paste("output/", var_x, ".csv", sep = ""), sep = ";", row.names = F)
+    write.table(result_file, paste("output/", dwd_var, ".csv", sep = ""), sep = ";", row.names = F)
     
     # progress
     print(i)
   }
 }
 
-dwd(var_x = "air_temperature")
-dwd(var_x = "solar")
-dwd(var_x = "wind")
-dwd(var_x = "precipitation")
+dwd(dwd_var = "air_temperature")
+dwd(dwd_var = "solar")
+dwd(dwd_var = "wind")
+dwd(dwd_var = "precipitation")

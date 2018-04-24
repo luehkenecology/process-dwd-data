@@ -265,10 +265,16 @@ dwd <- function(dwd_var = "wind",
     
     # progress
     print(i)
+    
+    return(list(gps_info_station = gps_info_station,
+         result_file = result_file))
   }
 }
 
-dwd(dwd_var = "air_temperature")
+eg <-    list(gps_info_station = gps_info_station,
+       result_file = result_file)
+
+eg <- dwd(dwd_var = "air_temperature")
 dwd(dwd_var = "solar")
 dwd(dwd_var = "wind")
 dwd(dwd_var = "precipitation")

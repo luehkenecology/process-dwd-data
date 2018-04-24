@@ -19,10 +19,20 @@ minDist <- function(points, p) which.min(colSums((t(points) - p)^2))
 coordinates <- read.table (file = "data/coordinates.csv",
                            row.names=1, header=TRUE, sep=";", fill=T)
 
+sites_x_coordinates <- coordinates$WGS84.X
+sites_y_coordinates <- coordinates$WGS84.Y
+site_ids <- coordinates$ID
+from_date = "2017-03-01"
+to_date = "2017-10-31"
+
 # download function----------------------------------------------------------------------
-dwd <- function(dwd_var = "wind"){
-  # just for script testing dwd_var = "solar"
-  
+dwd <- function(dwd_var = "wind",
+                x_coordinates = c(9.000461),
+                y_coordinates = c(50.13213),
+                ids = c("A"),
+                from_date = "2017-03-01",
+                to_date = "2017-10-31"){
+
   # download station info----------------------------------------------------------------------
   # temporary directory
   td = tempdir()
@@ -132,12 +142,12 @@ dwd <- function(dwd_var = "wind"){
                                                   format = "%Y-%m-%d")
   
   # subset available data within time frame
-  station_info_merge_all_4 <- station_info_merge_all_3[(station_info_merge_all_3$start_date <= "2017-03-01")*
-                                                         (station_info_merge_all_3$end_date >= "2017-10-31") == T,]
+  station_info_merge_all_4 <- station_info_merge_all_3[(station_info_merge_all_3$start_date <= from_date)*
+                                                         (station_info_merge_all_3$end_date >= to_date) == T,]
   
   # file with coordinate information of each sampling site
-  new.pos <- cbind(coordinates$WGS84.Y,
-                   coordinates$WGS84.X)
+  new.pos <- cbind(y_coordinates,
+                   x_coordinates)
   
   # identify stations in minimal distance----------------------------------------------------------------------
   # calculate minimal distance to each station
@@ -153,12 +163,12 @@ dwd <- function(dwd_var = "wind"){
   station_to_download_val <-as.vector(table(station_to_download))
   
   # extract gps info of station
-  gps_info_station <- data.frame(ID = coordinates$ID,
+  gps_info_station <- data.frame(ID = ids,
                                  x = station_info_merge_all_4[station_to_download,6],
                                  y = station_info_merge_all_4[station_to_download,5],
-                                 distance =   unlist(lapply(1:40, function(x) round(spDistsN1(pts = as.matrix(station_info_merge_all_4[,5:6]), new.pos[x,], longlat=T)[station_to_download[x]], 2))),
-                                 cx = coordinates$WGS84.X,
-                                 cy = coordinates$WGS84.Y)
+                                 distance =   unlist(lapply(1:nrow(new.pos), function(x) round(spDistsN1(pts = as.matrix(station_info_merge_all_4[,5:6]), new.pos[x,], longlat=T)[station_to_download[x]], 2))),
+                                 cx = x_coordinates,
+                                 cy = y_coordinates)
   
   # plot map with sampling sites-weather stations connected
   png(paste("figs/", dwd_var, "_map.png"),width = 6, height=5, units = 'in', res = 1000)

@@ -112,8 +112,8 @@ head(ff)
 ff$day <- yday(ff$date)
 head(ff)
 
-#Subset Data bezüglich Zeitraum(30.04.-31.10.2017)
-#und Datenlücke (Zwischenauslesung)
+#Subset Data bezÃ¼glich Zeitraum(30.04.-31.10.2017)
+#und DatenlÃ¼cke (Zwischenauslesung)
 zeitraum<-c("30.04.2017","31.10.2017")
 tagimjahr<-strptime(zeitraum,format="%d.%m.%Y")
 yday(tagimjahr)                                           
@@ -141,8 +141,8 @@ abline(h=mean(bla$temperature))
 ref<-bla$temperature[bla$id=="JRRR"]
 par(mfrow=c(1,1))
 plot(bla$temperature[bla$id=="JAP2"]-ref,type="l",col="red3",
-        ylim=c(-2,2),las=1,axes=F,ylab="mean deviation to reference logger in °C",
-        xlab="day in the year 2017",cex.lab=1.5,main="JA Wörlitzer Elbaue")
+        ylim=c(-2,2),las=1,axes=F,ylab="mean deviation to reference logger in Â°C",
+        xlab="day in the year 2017",cex.lab=1.5,main="JA WÃ¶rlitzer Elbaue")
 lines(bla$temperature[bla$id=="JAP1"]-ref,type="l",col="red1")
 lines(bla$temperature[bla$id=="JAP3"]-ref,type="l",col="red4")
 lines(bla$temperature[bla$id=="JAV1"]-ref,type="l",col="green1")
@@ -186,7 +186,7 @@ ggplot(na.omit(plotData), aes(x = day, y = temp_mean,
                          group = size.x, 
                          colour = size.x))+
          geom_line()+
-  ylab("mean deviation from the reference logger [°C]")+
+  ylab("mean deviation from the reference logger [Â°C]")+
   xlab("day of the year")+
   facet_wrap(~tree.x+height.x, scales = "free")+
   theme_classic()
@@ -211,7 +211,7 @@ for(i in 1:length(unique(MergData$group))){
                       group = size.x, 
                       colour = size.x))+
     geom_line()+
-    ylab("mean deviation from the reference logger [°C]")+
+    ylab("mean deviation from the reference logger [Â°C]")+
     xlab("day of the year")+
     facet_wrap(~tree.x+height.x)+
     theme_classic()+

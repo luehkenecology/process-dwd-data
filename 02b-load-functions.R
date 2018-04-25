@@ -4,18 +4,9 @@ attach(RPROJ)
 rm(RPROJ)
 setwd(PROJHOME)
 
-# load libraries----------------------------------------------------------------------
-library(lubridate)
-library(stringr)
-library(sp)
-library(RCurl)
-library(raster)
-d_shp <- getData('GADM', country='DEu', level=1)
-
+# load functions
 source("R/download-dwd-data.R")
-
-# distance function ----------------------------------------------------------------------
-minDist <- function(points, p) which.min(colSums((t(points) - p)^2))
+source("R/distance-between-points.R")
 
 # read file with coordinates of the sampling sites
 coordinates <- read.table (file = "data/coordinates.csv",
@@ -29,6 +20,10 @@ eg<- dwd_down(dwd_var = "air_temperature",
          to_date = "2017-10-31")
 
 write.table(eg[[1]], paste("output/", "air_temperature", "_GPS.csv"),sep=";")
+
+
+
+d_shp <- getData('GADM', country='DEu', level=1)
 
 # plot map with sampling sites-weather stations connected
 png(paste("figs/", dwd_var, "_map.png"),width = 6, height=5, units = 'in', res = 1000)

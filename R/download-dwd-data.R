@@ -1,10 +1,17 @@
-dwd <- function(dwd_var = "wind",
-                x_coordinates = c(9.000461),
-                y_coordinates = c(50.13213),
-                ids = c("A"),
-                from_date = "2017-03-01",
-                to_date = "2017-10-31"){
-
+dwd_down <- function(dwd_var = "air_temperature",
+                     x_coordinates = c(9.000461),
+                     y_coordinates = c(50.13213),
+                     ids = c("A"),
+                     from_date = "2017-03-01",
+                     to_date = "2017-10-31"){
+  
+  # load libraries----------------------------------------------------------------------
+  require(lubridate)
+  require(stringr)
+  require(sp)
+  require(RCurl)
+  require(raster)
+  
   # download station info----------------------------------------------------------------------
   # temporary directory
   td = tempdir()
@@ -93,7 +100,7 @@ dwd <- function(dwd_var = "wind",
     station_info_merge_all <- merge(station_info_merge_recent,
                                     station_info_merge_historic,
                                     by = "Stations_id", all = T)
-    station_info_merge_all_2 <- station_info_merge_all[!(is.na(station_info_merge_all[,8])),]
+    #station_info_merge_all_2 <- station_info_merge_all[!(is.na(station_info_merge_all[,8])),]
     station_info_merge_all_3 <- station_info_merge_all_2[,c(1,8:12,7,13)]
     
     station_info_merge_all_3[,7] <- paste("recent/", station_info_merge_all_3[,7], sep = "")
@@ -142,8 +149,8 @@ dwd <- function(dwd_var = "wind",
                                  cx = x_coordinates,
                                  cy = y_coordinates)
   
- 
-   
+  
+  
   # data.frame for saving from loop to loop
   result_file <- data.frame()
   
@@ -217,39 +224,11 @@ dwd <- function(dwd_var = "wind",
       }
     }
     
-    # save results
-    write.table(result_file, paste("output/", dwd_var, ".csv", sep = ""), sep = ";", row.names = F)
-    
     # progress
     print(i)
     
     # return list
     return(list(gps_info_station = gps_info_station,
-         result_file = result_file))
+                result_file = result_file))
   }
 }
-
-eg <-    list(gps_info_station = gps_info_station,
-       result_file = result_file)
-
-eg <- dwd(dwd_var = "air_temperature")
-write.table(eg[[1]], paste("output/", "air_temperature", "_GPS.csv"),sep=";")
-
-# plot map with sampling sites-weather stations connected
-png(paste("figs/", dwd_var, "_map.png"),width = 6, height=5, units = 'in', res = 1000)
-plot(d_shp, main = paste(dwd_var))
-points(gps_info_station[,2:3], pch = 19)
-points(gps_info_station[,5:6], pch = 19, col = "red")
-
-for(z in 1:nrow(gps_info_station)){
-  cc <- Lines(list(Line(rbind(as.numeric(gps_info_station[z,2:3]),
-                              as.numeric(gps_info_station[z,5:6])))), ID ="a")
-  m.sl = SpatialLines(list(cc))
-  plot(m.sl, add = T)
-}
-dev.off()
-
-
-dwd(dwd_var = "solar")
-dwd(dwd_var = "wind")
-dwd(dwd_var = "precipitation")

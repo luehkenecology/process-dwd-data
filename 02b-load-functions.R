@@ -1,3 +1,16 @@
+vignette("rdwd") 
+
+library("rdwd")
+link <- ?selectDWD("Potsdam", res="daily", var="kl", per="recent")
+
+nearbyStations(50.13213, 9.000461, radius = 300,
+               res=c("hourly"), var= c("solar"))
+c(9.000461),
+y_coordinates = c(50.13213)
+
+
+mindate=20160530
+
 # set working directory----------------------------------------------------------------------
 RPROJ <- list(PROJHOME = normalizePath(getwd()))
 attach(RPROJ)
@@ -12,18 +25,18 @@ source("R/distance-between-points.R")
 coordinates <- read.table (file = "data/coordinates.csv",
                            row.names=1, header=TRUE, sep=";", fill=T)
 
-eg<- dwd_down(dwd_var = "air_temperature",
-         x_coordinates = c(9.000461),
-         y_coordinates = c(50.13213),
-         ids = c("A"),
-         from_date = "2017-03-01",
-         to_date = "2017-10-31")
+eg <- dwd_down(dwd_var = "air_temperature",
+               x_coordinates = c(9.000461),
+               y_coordinates = c(50.13213),
+               ids = c("A"),
+               from_date = "2017-03-01",
+               to_date = "2017-10-31")
 
 write.table(eg[[1]], paste("output/", "air_temperature", "_GPS.csv"),sep=";")
 
 
 
-d_shp <- getData('GADM', country='DEu', level=1)
+d_shp <- getData('GADM', country='DEU', level=1)
 
 # plot map with sampling sites-weather stations connected
 png(paste("figs/", dwd_var, "_map.png"),width = 6, height=5, units = 'in', res = 1000)

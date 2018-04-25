@@ -1,4 +1,4 @@
-dwd_down <- function(dwd_var = "wind",
+dwd_down <- function(dwd_var = "air_temperature",
                      x_coordinates = c(9.000461),
                      y_coordinates = c(50.13213),
                      ids = c("A"),
@@ -100,7 +100,7 @@ dwd_down <- function(dwd_var = "wind",
     station_info_merge_all <- merge(station_info_merge_recent,
                                     station_info_merge_historic,
                                     by = "Stations_id", all = T)
-    station_info_merge_all_2 <- station_info_merge_all[!(is.na(station_info_merge_all[,8])),]
+    #station_info_merge_all_2 <- station_info_merge_all[!(is.na(station_info_merge_all[,8])),]
     station_info_merge_all_3 <- station_info_merge_all_2[,c(1,8:12,7,13)]
     
     station_info_merge_all_3[,7] <- paste("recent/", station_info_merge_all_3[,7], sep = "")

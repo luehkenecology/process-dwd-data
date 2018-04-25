@@ -2,8 +2,15 @@ dwd_down <- function(dwd_var = "air_temperature",
                      x_coordinates = c(9.000461),
                      y_coordinates = c(50.13213),
                      ids = c("A"),
-                     from_date = "2017-03-01",
+                     from_date = "2014-03-01",
                      to_date = "2017-10-31"){
+  
+  #dwd_var = "air_temperature"
+  #x_coordinates = c(9.000461)
+  #y_coordinates = c(50.13213)
+  #ids = c("A")
+  #from_date = "2014-03-01"
+  #to_date = "2017-10-31"
   
   # load libraries----------------------------------------------------------------------
   require(lubridate)
@@ -11,6 +18,7 @@ dwd_down <- function(dwd_var = "air_temperature",
   require(sp)
   require(RCurl)
   require(raster)
+  source("R/down_unzip_dwd.R")
   
   # download station info----------------------------------------------------------------------
   # temporary directory
@@ -100,8 +108,10 @@ dwd_down <- function(dwd_var = "air_temperature",
     station_info_merge_all <- merge(station_info_merge_recent,
                                     station_info_merge_historic,
                                     by = "Stations_id", all = T)
-    #station_info_merge_all_2 <- station_info_merge_all[!(is.na(station_info_merge_all[,8])),]
-    station_info_merge_all_3 <- station_info_merge_all_2[,c(1,8:12,7,13)]
+    station_info_merge_all[,8] <- apply(station_info_merge_all[,c(2,8)], 1, function(x) min(x, na.rm = T))
+    station_info_merge_all[,9] <-apply(station_info_merge_all[,c(3,9)], 1, function(x) min(x, na.rm = T))
+    
+    station_info_merge_all_3 <- station_info_merge_all[,c(1,8:12,7,13)]
     
     station_info_merge_all_3[,7] <- paste("recent/", station_info_merge_all_3[,7], sep = "")
     station_info_merge_all_3[,8] <- paste("historical/", station_info_merge_all_3[,8], sep = "")}
@@ -123,6 +133,8 @@ dwd_down <- function(dwd_var = "air_temperature",
   # subset available data within time frame
   station_info_merge_all_4 <- station_info_merge_all_3[(station_info_merge_all_3$start_date <= from_date)*
                                                          (station_info_merge_all_3$end_date >= to_date) == T,]
+  
+
   
   # file with coordinate information of each sampling site
   new.pos <- cbind(y_coordinates,
@@ -149,40 +161,26 @@ dwd_down <- function(dwd_var = "air_temperature",
                                  cx = x_coordinates,
                                  cy = y_coordinates)
   
-  
-  
   # data.frame for saving from loop to loop
   result_file <- data.frame()
   
   # loop through the coordinates
   for(i in 1:length(station_to_download_ids)){
-    # just for script testing i<-1
+   
     
-    # temporary directory
-    td = tempdir()
-    
-    # create temporary file
-    tf = tempfile(tmpdir = td, fileext=".zip")
-    
-    # download the file
-    download.file(paste("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/", dwd_var, "/",
-                        (ifelse(dwd_var == "solar", as.character(station_info_merge_all_4$url[station_to_download_ids[i]]), 
-                                as.character(station_info_merge_all_4$url.x[station_to_download_ids[i]]))), 
-                        sep=""), tf)
-    
-    # unzip the file to extract the file names in the zip
-    unzf <- unzip(tf,  exdir = td)
-    
-    # unzip the data file in the zip
-    e <- unzip(tf,
-               files= str_sub(unzf[length(unzf)], -45),
-               exdir = td, overwrite=T)
-    
-    # identify the file.path of the unzipped data file
-    fpath = file.path(td, str_sub(unzf[length(unzf)], -45))
-    
-    # read the data file  
-    rdata <- read.table(fpath, sep = ";", header = T)
+    if(dwd_var == "solar"){
+      rdata <- down_unzip_dwd(as.character(station_info_merge_all_4$url[station_to_download_ids[i]]), dwd_var)
+    }else{
+      if(as.numeric(as.Date(to_date)-as.Date(from_date))<=500){
+        rdata <- down_unzip_dwd(as.character(station_info_merge_all_4$url.x[station_to_download_ids[i]]), dwd_var)
+      }else{
+        rdata1 <- down_unzip_dwd(as.character(station_info_merge_all_4$url.x[station_to_download_ids[i]]), dwd_var)
+
+        rdata2 <- down_unzip_dwd(as.character(station_info_merge_all_4$url.y[station_to_download_ids[i]]), dwd_var)
+        
+        rdata <- rbind(rdata1, rdata2)
+        }
+    }
     
     # date to POSIXct-format (solar data have a different format)
     if(dwd_var == "solar"){
@@ -227,8 +225,9 @@ dwd_down <- function(dwd_var = "air_temperature",
     # progress
     print(i)
     
-    # return list
-    return(list(gps_info_station = gps_info_station,
-                result_file = result_file))
   }
+  
+  # return list
+  return(list(gps_info_station = gps_info_station,
+              result_file = result_file))
 }
